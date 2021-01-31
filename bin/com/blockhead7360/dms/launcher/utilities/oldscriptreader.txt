@@ -1,0 +1,112 @@
+package com.blockhead7360.dms.launcher.internet;
+
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import com.blockhead7360.dms.launcher.DMSLauncher;
+import com.blockhead7360.dms.launcher.utilities.CrashReport;
+import com.blockhead7360.dms.launcher.utilities.U;
+import com.blockhead7360.dms.program.manageserver.passwordencoder.DMSLauncherPasswordEncoder;
+
+public class ScriptReader {
+
+	private static final String baseUrl = "https://pastebin.com/raw/whfdWcEj";
+	
+	public static String image;
+	public static String changelog;
+	public static String password;
+	public static String baseminecraft;
+	public static String baseminecraftWindows;
+	public static String host, user, pass;
+	public static int port = 21;
+	public static Map<String, String> remoteSettings = new HashMap<String, String>();
+	public static String igi;
+	
+	public static List<String> getServers(DMSLauncher main){
+		List<String> servers = getRawServers(main);
+		for (int i = 0; i < servers.size(); i++) {
+			servers.set(i, servers.get(i).split("iiIii")[0]);
+		}
+		return servers;
+	}
+	
+	private static List<String> getRawServers(DMSLauncher main) {
+		String findUrl = InternetReader.readContent(main, baseUrl);
+		String[] list_array = findUrl.split("-iiXii-");
+		List<String> list = new ArrayList<String>();
+		for (String s : list_array) list.add(s);
+		list.remove(0); //removes the scriptRunning
+		return list;
+	}
+	
+	public static void read(DMSLauncher main) {
+		String myLink = null;
+		for (String servers : getRawServers(main)) {
+			if (servers.split("iiIii")[0].equals(main.server)) {
+				myLink = servers.split("iiIii")[1];
+				break;
+			}
+		}
+		
+		String content = InternetReader.readContent(main, myLink);
+		
+		String img = content.split("iiImageii-")[1].split("iiStopii-")[0];
+		image = img;
+		
+		String cl = content.split("iiChangelogii-")[1].split("iiStopii-")[0];
+		cl = cl.replaceAll("iiNLii", "\n");
+		changelog = cl;
+		
+		String pw = content.split("iiTypeii-")[1].split("iiStopii-")[0];
+		password = DMSLauncherPasswordEncoder.decode(pw);
+		
+		String bm = content.split("iiBaseMinecraftii-")[1].split("iiStopii-")[0];
+		baseminecraft = bm;
+		
+		String bmw = content.split("iiBaseMinecraftWinii-")[1].split("iiStopii-")[0];
+		baseminecraftWindows = bmw;
+		
+		String ftp = content.split("iiFTPii-")[1].split("iiStopii-")[0];
+		host = ftp.split("iiDomainii-")[1].split("iiEndii-")[0];
+		user = ftp.split("iiIdStringii-")[1].split("iiEndii-")[0];
+		pass = DMSLauncherPasswordEncoder.decode(ftp.split("iiIdNumberii-")[1].split("iiEndii-")[0]);
+		
+		if (content.contains("iiRemoteSettingsii")) {
+			String rs = content.split("iiRemoteSettingsii-")[1].split("iiEndii-")[0];
+			if (rs.contains("iiDiffSettingii")) {
+				String[] rs_split = rs.split("iiDiffSettingii");
+				for (String j : rs_split) {
+					String[] j_split = j.split("iiSii");
+					remoteSettings.put(j_split[0], j_split[1]);
+				}
+			}
+			else {
+				String[] j_split = rs.split("iiSii");
+				remoteSettings.put(j_split[0], j_split[1]);
+			}
+		}
+		
+		String igi_load = content.split("iiIGIii-")[1].split("iiStopii-")[0];
+		igi = igi_load;
+		
+		String u = content.split("iiUpdaterii-")[1].split("iiStopii-")[0];
+		if (!new File(U.base, "DMSLauncherUpdater.jar").exists()) {
+			try {
+				FilesUtility.download(new URL(u), new File(U.base, "DMSLauncherUpdater.jar").getPath());
+			} catch (IOException e) {
+				new CrashReport(main, e);
+			}
+		}
+		
+		
+	}
+	
+	
+	
+	
+}

@@ -1,0 +1,158 @@
+package com.blockhead7360.dms.launcher.views;
+
+import java.awt.Color;
+import java.awt.Insets;
+import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+
+import com.blockhead7360.dms.launcher.DMSLauncher;
+import com.blockhead7360.dms.launcher.internet.InternetReader;
+import com.blockhead7360.dms.launcher.internet.ScriptReader;
+import com.blockhead7360.dms.launcher.utilities.Fonts;
+import com.blockhead7360.dms.launcher.utilities.SW;
+import com.blockhead7360.dms.launcher.utilities.U;
+import com.blockhead7360.dms.launcher.view.Window;
+
+public class Server extends Window{
+
+	public static Map<String, String> rules = new HashMap<String, String>();
+	public static List<String> rulesKeys = new ArrayList<String>();
+	
+	public static JTextArea ruleList;
+	public static JTextArea ruleAbout;
+	public static String updated;
+	public static String below;
+	
+	public static String ruleListText = "";
+	
+	public static JComboBox<String> ruleSelect;
+	
+	public static DMSLauncher dmsmain;
+	
+	public Server(DMSLauncher main) {
+		super(main, "Server", "View server rules");
+		
+		dmsmain = main;
+		
+		JLabel serverrules = U.cL("Server Rules", Fonts.bold32a(), 0, 5, 1000, 50);
+		pane.add(serverrules);
+		
+		JLabel updatedTime = U.cL(updated, Fonts.plain14a(), 0, 55, 1000, 30);
+		pane.add(updatedTime);
+		
+		JLabel belowText = U.cL(below, Fonts.bold14a(), 0, 475, 1000, 30);
+		belowText.setForeground(new Color(176, 0, 0));
+		pane.add(belowText);
+
+		ruleList = new JTextArea();
+		ruleList.setMargin(new Insets(20, 20, 20, 20));
+		ruleList.setBounds(new Rectangle(25, 105, 600, 350));
+		ruleList.setFont(Fonts.bold18());
+		ruleList.setEditable(false);
+		ruleList.setText(ruleListText);
+		ruleList.setVisible(true);
+		JScrollPane ruleList_pane = new JScrollPane(ruleList);
+		ruleList_pane.setBounds(new Rectangle(25, 105, 600, 350));
+		pane.add(ruleList_pane);
+		
+		
+		ruleAbout = new JTextArea();
+		ruleAbout.setMargin(new Insets(8, 8, 8, 8));
+		ruleAbout.setBounds(new Rectangle(650, 205, 325, 250));
+		ruleAbout.setFont(Fonts.plain14());
+		ruleAbout.setEditable(false);
+		ruleAbout.setText(ruleAbout_placeholder);
+		ruleAbout.setForeground(Color.gray);
+		ruleAbout.setVisible(true);
+		JScrollPane ruleAbout_pane = new JScrollPane(ruleAbout);
+		ruleAbout_pane.setBounds(new Rectangle(650, 205, 325, 250));
+		pane.add(ruleAbout_pane);
+		
+		
+		
+		JLabel viewmore = U.cL("Select a rule to view more information", Fonts.italic12a(), 650, 120, 325, 30);
+		pane.add(viewmore);
+		
+		ruleSelect = new JComboBox<String>();
+		ruleSelect.addItem(" ");
+		for (String s : rulesKeys) {
+			ruleSelect.addItem(s);
+		}
+		ruleSelect.addActionListener(new ViewMore());
+		ruleSelect.setBounds(new Rectangle(650, 150, 325, 30));
+		pane.add(ruleSelect);
+		
+		register(this);
+		
+	}
+	
+	
+	public class ViewMore implements ActionListener{
+		public void actionPerformed(ActionEvent e) {
+			
+			new SW() {
+				public void method() {
+					
+					if (ruleSelect.getSelectedIndex() <= 0) {
+						ruleAbout.setText(ruleAbout_placeholder);
+						ruleAbout.setForeground(Color.gray);
+						return;
+					}
+					String text = rules.get(ruleSelect.getSelectedItem());
+					text = text.replaceAll("/n", "\n");
+					ruleAbout.setText(text);
+					ruleAbout.setForeground(Color.black);
+					
+				}
+			};
+		}
+	}
+	
+	
+	public static void initRules() {
+		
+		rules.clear();
+		rulesKeys.clear();
+		ruleListText = "";
+		
+		String content = InternetReader.readContent(ScriptReader.ruleLink);
+		String upd = content.split("sub:")[1].split(":")[0];
+		updated = upd;
+		content = content.replaceFirst("sub:" + upd + ":", "");
+		String down = content.split("down:")[1].split(":")[0];
+		below = down;
+		content = content.replace("down:" + down + ":", "");
+		content = content.replaceAll("-----", "");
+
+		String[] rule = content.split("-iiNextRuleii-");
+		for (String s : rule) {
+			rules.put(s.split("iiMeansii")[0].replaceAll("&#039;", "'"), s.split("iiMeansii")[1].replaceAll("&#039;", "'"));
+			rulesKeys.add(s.split("iiMeansii")[0].replaceAll("&#039;", "'"));
+		}
+		
+		
+		for (int i = 0; i < rules.size(); i++) {
+			
+			ruleListText += (i + 1) + ". " + rulesKeys.get(i).toString() + "\n\n";
+		}
+		
+	}
+
+	public static String ruleAbout_placeholder = "Select a rule from the box above to\n" +
+			"view more information about that rule.\n\n" +
+			"This is really important so that you\n" +
+			"can actually know what each rule\n" +
+			"means.";
+	
+	
+}

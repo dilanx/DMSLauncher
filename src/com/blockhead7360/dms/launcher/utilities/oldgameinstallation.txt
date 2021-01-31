@@ -1,0 +1,113 @@
+package com.blockhead7360.dms.launcher;
+
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
+import java.util.List;
+import java.util.regex.Matcher;
+
+import com.blockhead7360.dms.launcher.files.FM;
+import com.blockhead7360.dms.launcher.internet.FilesUtility;
+import com.blockhead7360.dms.launcher.internet.ScriptReader;
+import com.blockhead7360.dms.launcher.utilities.CrashReport;
+import com.blockhead7360.dms.launcher.utilities.SW;
+import com.blockhead7360.dms.launcher.utilities.U;
+import com.blockhead7360.dms.program.DMSLauncher_old.UnZipper;
+
+public class GameInstallation {
+
+	private DMSLauncher main;
+	private Play playFrame;
+
+	public GameInstallation(DMSLauncher main, Play playFrame) {
+		this.main = main;
+		this.playFrame = playFrame;
+	}
+
+	public void install() {
+		part1();
+	}
+
+	private void part1() {
+		playFrame.disableButtons();
+		main.getWindow().disableTabs();
+
+		playFrame.updatetext.setText("Game is installing...");
+		playFrame.addToConsole("\nStarting installation...\n");
+
+		if (U.isMacOS()) {
+			playFrame.addToConsole("Downloading file from " + ScriptReader.baseminecraft + "\n");
+		} else {
+			playFrame.addToConsole("Downloading file from " + ScriptReader.baseminecraftWindows + "\n");
+		}
+
+		new SW() {
+			public void method() {
+				try {
+					FilesUtility.downloadAndShowProgress(new URL((U.isMacOS() ? ScriptReader.baseminecraft : ScriptReader.baseminecraftWindows)), new File(U.base + File.separator + main.server, "DMSClientFiles.zip").getPath(), playFrame);
+					part2();
+				} catch (IOException e) {
+					new CrashReport(main, e);
+				}
+			}
+		};
+
+	}
+
+	private void part2() {
+		
+		String basepath = U.base + File.separator + main.server;
+		
+		U.pause(500L);
+		playFrame.addToConsole("\nUnzipping the zip file...\n");
+		File dir = new File(basepath, "Game");
+		if (!dir.exists()) {
+			dir.mkdir();
+		}
+		
+		try {
+			UnZipper.unzip(new File(basepath, "DMSClientFiles.zip").getPath(), new File(U.base + File.separator + main.server, "Game").getPath());
+		} catch (IOException e) {
+			new CrashReport(main, e);
+		}
+		
+		playFrame.addToConsole("Editing launcher_profiles.json...\n");
+		
+		try {
+			
+			List<String> lines = Files.readAllLines(new File(new File(basepath, "Game"), "launcher_profiles.json").toPath());
+			int index = -1;
+			for (String s : lines){
+				index++;
+				if (s.contains("DMSLAUNCHER/GAMEDIRPATH")) break;
+			}
+
+			String k = lines.get(index);
+			if (!U.isMacOS())
+
+				k = k.replace("DMSLAUNCHER/GAMEDIRPATH", new File(basepath, "Game").getPath().replaceAll(Matcher.quoteReplacement("\\"), Matcher.quoteReplacement("\\\\")));
+			else
+				k = k.replaceAll("DMSLAUNCHER/GAMEDIRPATH", new File(basepath, "Game").getPath());
+			lines.set(index, k);
+			FM.clear(new File(new File(basepath, "Game"), "launcher_profiles.json"));
+			Files.write(new File(new File(basepath, "Game"), "launcher_profiles.json").toPath(), lines, StandardOpenOption.CREATE);
+
+		} catch (IOException e) {
+			new CrashReport(main, e);
+		}
+		
+		playFrame.addToConsole("Minecraft modded installation complete!\n\n");
+		playFrame.play.setText("Play Minecraft");
+		
+		new SW() {
+			public void method() {
+				GamePlay gp = new GamePlay(main, playFrame);
+				gp.checkForUpdates();
+			}
+		};
+		
+	}
+
+}

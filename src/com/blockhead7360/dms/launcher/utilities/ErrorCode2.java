@@ -1,0 +1,22 @@
+package com.blockhead7360.dms.launcher.utilities;
+
+public enum ErrorCode2 {
+
+	DEFAULT,
+	LINK,
+	MAIL_LINK,
+	RAM_SET,
+	DOWNLOAD_WRITE,
+	WRITE,
+	FILE_LAUNCH,
+	REMOTE_CONNECTION,
+	UPDATE_CHECK,
+	UNZIP,
+	CREATE_FILE,
+	READ,
+	READ_INTERNET_PAGE,
+	SETTINGS_LOAD,
+	SETTINGS_STORE
+	
+	
+}
