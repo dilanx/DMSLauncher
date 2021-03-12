@@ -11,8 +11,8 @@ import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
 import com.blockhead7360.dms.launcher.files.FM;
-import com.blockhead7360.dms.launcher.internet.DMSAccount;
 import com.blockhead7360.dms.launcher.internet.InternetReader;
+import com.blockhead7360.dms.launcher.internet.InternetServerData;
 import com.blockhead7360.dms.launcher.internet.ScriptReader;
 import com.blockhead7360.dms.launcher.utilities.CrashReport;
 import com.blockhead7360.dms.launcher.utilities.ErrorCode;
@@ -20,10 +20,19 @@ import com.blockhead7360.dms.launcher.utilities.Fonts;
 import com.blockhead7360.dms.launcher.utilities.U;
 import com.blockhead7360.dms.launcher.view.LoadingWindow;
 import com.blockhead7360.dms.launcher.view.MainWindow;
+import com.formdev.flatlaf.FlatDarkLaf;
+import com.formdev.flatlaf.FlatLightLaf;
 
 public class DMSLauncher {
 
 	/* 
+	 * 1.11.0
+	 * - Update theme (dark mode)
+	 * - Made changelog smaller
+	 * - Fixed server status checker
+	 * - Rules on DilanScript 2
+	 * - Accounts not required for servers
+	 * 
 	 * 1.10.3
 	 * - Download options feature
 	 * 
@@ -50,15 +59,14 @@ public class DMSLauncher {
 	 */
 
 
-	public static final String version = "1.10.3";
+	public static final String version = "1.11.0";
 	//public static final String imageUrl = "https://i.imgur.com/OtOShOj.png";
 
 	public static String server = "NONE";
 	public static String account = "NONE";
 	public static String gameDir;
 	public static String path = "";
-
-	public static DMSAccount account_full = null;
+	public static boolean darkMode = false;
 
 	private static MainWindow window;
 
@@ -69,16 +77,11 @@ public class DMSLauncher {
 
 		int i = U.iD("New in DMSLauncher " + version,
 				
-				"+ Download options and keybinds presets!\n"
-				+ "  - For new players, rather than having to sit down and have Dilan help you set up your options\n"
-				+ "    and keybinds, you can just download a preset before you launch your game.\n\n"
-				+ "- A bunch of enhancements.\n"
-				+ "- Small UI changes.\n\n"
-				+ "Check out the full changelog for more stuff."
+				"Check out the full changelog lol I don't wanna rewrite it here again."
 				, "Close", new String[]{"Close", "View full changelog"});
 		if (i == 1) {
 			try {
-				Desktop.getDesktop().browse(new URI("https://repo.blockhead7360.com/changelogs/swda-10010.html"));
+				Desktop.getDesktop().browse(new URI("https://repo.blockhead7360.com/changelogs/swda-10010"));
 			} catch (IOException e1) {
 				CrashReport.error(e1, ErrorCode.OPEN_LINK, false);
 			} catch (URISyntaxException e1) {
@@ -88,8 +91,35 @@ public class DMSLauncher {
 	}
 
 	public DMSLauncher(String console) {
-
-
+		
+		FM.loadMainFiles();
+		
+		String dark = FM.config.getProperty("dark_mode", "false");
+		if (dark.equals("true")) darkMode = true;
+		
+		if (darkMode) {
+			
+			FlatDarkLaf.install();
+			
+			try {
+				UIManager.setLookAndFeel(new FlatDarkLaf());
+			} catch (UnsupportedLookAndFeelException e) {
+				CrashReport.error(e, ErrorCode.LOOK_AND_FEEL, true);
+			}
+			
+		} else {
+			
+			FlatLightLaf.install();
+			
+			try {
+				UIManager.setLookAndFeel(new FlatLightLaf());
+			} catch (UnsupportedLookAndFeelException e) {
+				CrashReport.error(e, ErrorCode.LOOK_AND_FEEL, true);
+			}
+			
+		}
+		
+		/*
 		if (!U.isMacOS()) {
 			
 			try {
@@ -99,7 +129,7 @@ public class DMSLauncher {
 				CrashReport.error(e, ErrorCode.LOOK_AND_FEEL, true);
 			}
 			
-		}
+		}*/
 
 		LoadingWindow lw = new LoadingWindow("starting");
 
@@ -114,8 +144,6 @@ public class DMSLauncher {
 		}
 
 		Fonts.init();
-
-		FM.loadMainFiles();
 		
 		window = new MainWindow();
 		window.loadWindow();
@@ -129,7 +157,7 @@ public class DMSLauncher {
 			
 		}
 
-		Map<String, String> servers = ScriptReader.getServers();
+		Map<String, InternetServerData> servers = ScriptReader.getServers();
 		
 		Login login = new Login(this, servers);
 		boolean success = login.connectToServer(false, FM.config.getProperty("server_name"), FM.config.getProperty("server_pass"), FM.config.getProperty("server_account"));

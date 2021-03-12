@@ -129,7 +129,7 @@ public class FTP {
 				client.enterLocalPassiveMode();
 				client.setFileType(org.apache.commons.net.ftp.FTP.BINARY_FILE_TYPE);
 				
-				client.changeWorkingDirectory("/DMSLauncher");
+				client.changeWorkingDirectory("/" + ScriptReader.dir);
 				
 				success = true;
 				

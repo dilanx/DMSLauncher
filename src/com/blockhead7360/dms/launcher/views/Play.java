@@ -64,7 +64,7 @@ public class Play extends Window{
 		changelog = new JTextArea();
 		changelog.setMargin(new Insets(20, 20, 20, 20));
 		changelog.setBounds(new Rectangle(25, 5, 600, 400));
-		changelog.setFont(Fonts.bold18());
+		changelog.setFont(Fonts.plain14());
 		changelog.setEditable(false);
 		changelog.setText(changelogText);
 		changelog.setVisible(true);
@@ -113,7 +113,18 @@ public class Play extends Window{
 
 		pane.add(play);
 
-		updatetext = U.rL("Hello " + DMSLauncher.account.split("\\.")[0] + "!", Fonts.bold14a(), 450, 480, 245, 40);
+		String text = null;
+
+		if (DMSLauncher.account == null) {
+
+			text = "Hello!";
+
+		} else {
+
+			text = "Hello " + DMSLauncher.account.split("\\.")[0] + "!";
+
+		}
+		updatetext = U.rL(text, Fonts.bold14a(), 450, 480, 245, 40);
 		pane.add(updatetext);
 
 		statusOnline = U.l("Unable to retreive server status", Fonts.bold22a(), 40, 405, 570, 50);
@@ -121,7 +132,8 @@ public class Play extends Window{
 		pane.add(statusOnline); 
 
 		playerCount = U.l(" ", Fonts.bold16a(), 205, 405, 405, 50);
-		playerCount.setForeground(Color.darkGray);
+		if (DMSLauncher.darkMode) playerCount.setForeground(Color.lightGray); 
+		else playerCount.setForeground(Color.darkGray);
 
 		pane.add(playerCount);
 
@@ -159,7 +171,7 @@ public class Play extends Window{
 			ramAllocate.setToolTipText("Install your game first.");
 		}
 		pane.add(ramAllocate);
-		
+
 		loadOptions = new JButton("Download Options");
 		loadOptions.setFont(Fonts.plain14());
 		loadOptions.setBounds(new Rectangle(260, 478, 220, 30));
@@ -201,42 +213,43 @@ public class Play extends Window{
 	public void refreshStatus() {
 		try {
 
-			
+
 			if (ScriptReader.disableServerIndicator) {
-				
+
 				statusOnline.setText("Server status unavailable");
 				playerCount.setText(" ");
 				playerList.setText("The administrator has temporarily disabled this feature.");
 				statusOnline.setForeground(Color.gray);
 				statusIndicator.setForeground(Color.gray);
 				statusRefresh.setEnabled(false);
-				
+
 				return;
-				
+
 			}			
 
 			statusOnline.setText("Loading...");
 			statusOnline.setForeground(Color.gray);
-			
+
 			JsonObject query = InternetReader.getServerQuery("https://api.mcsrvstat.us/2/" + ScriptReader.serverIP);
-			
+
 			if (query == null) {
-				
+
 				statusOnline.setText("Server status unavailable");
 				playerCount.setText(" ");
 				playerList.setText("Unable to retrieve server status.");
 				statusOnline.setForeground(Color.gray);
 				statusIndicator.setForeground(Color.gray);
-				
+
 				return;
-				
+
 			}
-			
-			
+
+
 			if (query.getBoolean("online")) {
-				
+
 				statusOnline.setText("Server Online");
-				statusOnline.setForeground(Color.black);
+				if (DMSLauncher.darkMode) statusOnline.setForeground(Color.white); 
+				else statusOnline.setForeground(Color.black);
 				statusIndicator.setForeground(new Color(46, 204, 64));
 				int playersOnline = query.getJsonObject("players").getInt("online");
 				if (playersOnline == 0) {
@@ -244,43 +257,44 @@ public class Play extends Window{
 					playerList.setText(" ");
 				} else {
 					playerCount.setText(playersOnline + " " + (playersOnline == 1 ? " player" : "players") + " online");
-					
-					JsonArray array = query.getJsonArray("players");
-					
+
+					JsonArray array = query.getJsonObject("players").getJsonArray("list");
+
 					if (array == null) {
-						
+
 						playerList.setText("Unable to retrieve player names.");
-						
+
 					} else {
-						
+
 						int length = array.size();
-						
+
 						if (length > 0) {
-							
+
 							String list = array.getString(0);
-							
+
 							for (int i = 1; i < length; i++) {
-								
+
 								list += ", " + array.getString(i);
-								
+
 							}
-							
+
 							playerList.setText(list);
-							
+
 						}
-						
+
 					}
-					
+
 				}
-				
+
 			} else {
-				
+
 				statusOnline.setText("Server Offline");
-				statusOnline.setForeground(Color.black);
+				if (DMSLauncher.darkMode) statusOnline.setForeground(Color.white); 
+				else statusOnline.setForeground(Color.black);
 				statusIndicator.setForeground(Color.red);
 				playerCount.setText(" ");
 				playerList.setText(" ");
-				
+
 			}
 
 		} catch (Exception e) {
@@ -291,83 +305,83 @@ public class Play extends Window{
 			statusIndicator.setForeground(Color.gray);
 		}
 	}
-	
+
 	public class LoadOptions implements ActionListener{
-		
+
 		public void fromInstallation() {
-			
+
 			options(true);
-			
+
 		}
-		
+
 		public void actionPerformed(ActionEvent e) {
-			
+
 			options(false);
-			
+
 		}
-		
+
 		public void options(boolean fromInstallation) {
-			
+
 			disableButtons();
-			
+
 			Map<String, String> optionsMap = ScriptReader.options;
-						
+
 			String def = "Default options and keybinds";
-			
+
 			String[] options = new String[optionsMap.keySet().size() + 1];
-			
+
 			options[0] = def;
-			
+
 			int i = 1;
 			for (String key : optionsMap.keySet()) {
-				
+
 				options[i] = key;
 				i++;
-				
+
 			}
-			
+
 			String s = (String) JOptionPane.showInputDialog(DMSLauncher.getWindow().frame, "Select an options/keybinds preset to download:" + (fromInstallation ? "" : "\n\n(WARNING: Your previous options and keybinds will be permanently deleted.)"), "Download Options / Keybinds", JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
 			if (s == null) {
-				
+
 				if (fromInstallation) options(true);
-				
+
 				enableButtons();
-				
+
 				return;
-				
+
 			}
-			
+
 			if (s.equals(def)) {
-				
+
 				File oldOptions = new File(FM.base, DMSLauncher.server + File.separator + "Game" + File.separator + "options.txt");
-				
+
 				if (oldOptions.exists()) oldOptions.delete();
-				
+
 				addToConsole("\nUsing default options.");
-				
+
 			} else {
-								
+
 				try {
 					File newOptions = new File(FM.base, DMSLauncher.server + File.separator + "Game" + File.separator + "options_dl.txt");
 					FilesUtility.download(new URL(optionsMap.get(s)), newOptions.getPath());
-					
+
 					File oldOptions = new File(FM.base, DMSLauncher.server + File.separator + "Game" + File.separator + "options.txt");
-					
+
 					if (oldOptions.exists()) oldOptions.delete();
 					newOptions.renameTo(oldOptions);
-					
+
 				} catch (IOException e) {
 					CrashReport.error(e, ErrorCode.INTERNET_DOWNLOAD, false);
 					enableButtons();
 					return;
 				}
-				
+
 				addToConsole("\nDownloaded options:\n" + s);
-				
+
 			}
-			
+
 			enableButtons();
-			
+
 			if (fromInstallation) {
 				new SW() {
 					public void method() {
@@ -376,9 +390,9 @@ public class Play extends Window{
 					}
 				};
 			}
-			
+
 		}
-		
+
 	}
 
 	public class RAMAllocateButton implements ActionListener{
@@ -388,17 +402,17 @@ public class Play extends Window{
 			ram(true);
 
 		}
-		
+
 		public void actionPerformed(ActionEvent e) {
-			
+
 			ram(false);
-			
+
 		}
-		
+
 		public void ram(boolean fromInstallation) {
-			
+
 			disableButtons();
-			
+
 			String[] rams = new String[]{"2048 MB", "2304 MB", "2560 MB", "2816 MB", "3072 MB", "3328 MB", "3584 MB", "3840 MB", "4096 MB", "4352 MB", "4608 MB", "4864 MB", "5120 MB", "5376 MB", "5632 MB", "5888 MB", 
 					"6144 MB", "6400 MB", "6656 MB", "6912 MB", "7168 MB", "7424 MB", "7680 MB", "7936 MB", "8192 MB", "8448 MB", "8704 MB", "8960 MB", "9216 MB", "9472 MB", "9728 MB", "9984 MB", "10240 MB", "10496 MB", 
 					"10752 MB", "11008 MB", "11264 MB", "11520 MB"};
@@ -429,19 +443,19 @@ public class Play extends Window{
 
 				String s = (String) JOptionPane.showInputDialog(DMSLauncher.getWindow().frame, "Select RAM allocation towards Minecraft:", "Minecraft RAM Allocation", JOptionPane.QUESTION_MESSAGE, null, rams, j + " MB");
 				if (s == null) {
-					
+
 					if (fromInstallation) ram(true);
-					
+
 					enableButtons();
-					
+
 					return;
-					
+
 				}
 				lines.set(i, full.replace(j, s.replace(" MB", "")));
 				FM.clear(new File(new File(FM.base, DMSLauncher.server + File.separator + "Game"), "launcher_profiles.json"));
 				Files.write(new File(new File(FM.base, DMSLauncher.server + File.separator + "Game"), "launcher_profiles.json").toPath(), lines, StandardOpenOption.WRITE);
 				addToConsole("\nChanged Minecraft RAM allocation:\n" + s);
-				
+
 				enableButtons();
 
 				if (fromInstallation) {
@@ -488,10 +502,13 @@ public class Play extends Window{
 				return;
 			}
 
-			if (DMSLauncher.account_full.getBlockButton().equalsIgnoreCase("yes")) {
-				U.iD("DMSLauncher", DMSLauncher.account_full.getBlockReason(), null);
-				return;
+			if (Settings.myAccount != null) {
+				if (Settings.myAccount.getBlockButton().equalsIgnoreCase("yes")) {
+					U.iD("DMSLauncher", Settings.myAccount.getBlockReason(), null);
+					return;
+				}
 			}
+
 
 			new SW() {
 				public void method() {

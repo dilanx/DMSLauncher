@@ -3,6 +3,7 @@ package com.blockhead7360.dms.launcher.view;
 import java.awt.Color;
 import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.event.WindowEvent;
@@ -16,8 +17,6 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 
 import com.blockhead7360.dms.launcher.DMSLauncher;
 import com.blockhead7360.dms.launcher.Login;
@@ -79,13 +78,17 @@ public class MainWindow {
 
 		tabs = new JTabbedPane();
 		tabs.setBounds(new Rectangle(0, 100, TAB_WIDTH, TAB_HEIGHT));
-		tabs.addChangeListener(new ChangeListener() {
-			public void stateChanged(ChangeEvent e) {
-
-				updateTabColor();
-
-			}
-		});
+		if (DMSLauncher.darkMode) tabs.setForeground(Color.white);
+		else tabs.setForeground(Color.black);
+		
+		tabs.setFont(new Font("arial", Font.BOLD, 12));
+//		tabs.addChangeListener(new ChangeListener() {
+//			public void stateChanged(ChangeEvent e) {
+//
+//				updateTabColor();
+//
+//			}
+//		});
 
 		JPanel pane = new JPanel();
 		pane.setLayout(null);
@@ -114,7 +117,7 @@ public class MainWindow {
 			tabs.addTab(tws.getTitle(), null, tws.getPane(), tws.getDesc());
 		}
 		
-		updateTabColor();
+		//updateTabColor();
 
 		container.add(tabs);
 
@@ -137,18 +140,18 @@ public class MainWindow {
 		tabs.setEnabled(true);
 	}
 
-	public void updateTabColor() {
-
-		if (U.isMacOS()) {
-			for (int i = 0; i < tabs.getTabCount(); i++) {
-
-				if (tabs.getSelectedIndex() == i) tabs.setForegroundAt(i, Color.black);
-				else tabs.setForegroundAt(i, Color.darkGray);
-
-			}
-		}
-
-	}
+//	public void updateTabColor() {
+//
+//		if (U.isMacOS()) {
+//			for (int i = 0; i < tabs.getTabCount(); i++) {
+//
+//				if (tabs.getSelectedIndex() == i) tabs.setForegroundAt(i, Color.black);
+//				else tabs.setForegroundAt(i, Color.darkGray);
+//
+//			}
+//		}
+//
+//	}
 
 	public void saveAndExit(boolean shutdown) {
 

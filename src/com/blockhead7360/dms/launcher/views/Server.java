@@ -5,10 +5,6 @@ import java.awt.Insets;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
@@ -16,7 +12,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 
 import com.blockhead7360.dms.launcher.DMSLauncher;
-import com.blockhead7360.dms.launcher.internet.InternetReader;
 import com.blockhead7360.dms.launcher.internet.ScriptReader;
 import com.blockhead7360.dms.launcher.utilities.Fonts;
 import com.blockhead7360.dms.launcher.utilities.SW;
@@ -24,14 +19,9 @@ import com.blockhead7360.dms.launcher.utilities.U;
 import com.blockhead7360.dms.launcher.view.Window;
 
 public class Server extends Window{
-
-	public static Map<String, String> rules = new HashMap<String, String>();
-	public static List<String> rulesKeys = new ArrayList<String>();
 	
 	public static JTextArea ruleList;
 	public static JTextArea ruleAbout;
-	public static String updated;
-	public static String below;
 	
 	public static String ruleListText = "";
 	
@@ -47,10 +37,10 @@ public class Server extends Window{
 		JLabel serverrules = U.cL("Server Rules", Fonts.bold32a(), 0, 5, 1000, 50);
 		pane.add(serverrules);
 		
-		JLabel updatedTime = U.cL(updated, Fonts.plain14a(), 0, 55, 1000, 30);
+		JLabel updatedTime = U.cL(ScriptReader.rulesSub, Fonts.plain14a(), 0, 55, 1000, 30);
 		pane.add(updatedTime);
 		
-		JLabel belowText = U.cL(below, Fonts.bold14a(), 0, 475, 1000, 30);
+		JLabel belowText = U.cL(ScriptReader.rulesWarn, Fonts.bold14a(), 0, 475, 1000, 30);
 		belowText.setForeground(new Color(176, 0, 0));
 		pane.add(belowText);
 
@@ -85,7 +75,7 @@ public class Server extends Window{
 		
 		ruleSelect = new JComboBox<String>();
 		ruleSelect.addItem(" ");
-		for (String s : rulesKeys) {
+		for (String s : ScriptReader.rulesKeys) {
 			ruleSelect.addItem(s);
 		}
 		ruleSelect.addActionListener(new ViewMore());
@@ -108,10 +98,11 @@ public class Server extends Window{
 						ruleAbout.setForeground(Color.gray);
 						return;
 					}
-					String text = rules.get(ruleSelect.getSelectedItem());
+					String text = ScriptReader.rules.get(ruleSelect.getSelectedItem());
 					text = text.replaceAll("/n", "\n");
 					ruleAbout.setText(text);
-					ruleAbout.setForeground(Color.black);
+					if (DMSLauncher.darkMode) ruleAbout.setForeground(Color.white);
+					else ruleAbout.setForeground(Color.black);
 					
 				}
 			};
@@ -121,38 +112,16 @@ public class Server extends Window{
 	
 	public static void initRules() {
 		
-		rules.clear();
-		rulesKeys.clear();
 		ruleListText = "";
 		
-		String content = InternetReader.readContent(ScriptReader.ruleLink);
-		String upd = content.split("sub:")[1].split(":")[0];
-		updated = upd;
-		content = content.replaceFirst("sub:" + upd + ":", "");
-		String down = content.split("down:")[1].split(":")[0];
-		below = down;
-		content = content.replace("down:" + down + ":", "");
-		content = content.replaceAll("-----", "");
-
-		String[] rule = content.split("-iiNextRuleii-");
-		for (String s : rule) {
-			rules.put(s.split("iiMeansii")[0].replaceAll("&#039;", "'"), s.split("iiMeansii")[1].replaceAll("&#039;", "'"));
-			rulesKeys.add(s.split("iiMeansii")[0].replaceAll("&#039;", "'"));
-		}
-		
-		
-		for (int i = 0; i < rules.size(); i++) {
+		for (int i = 0; i < ScriptReader.rules.size(); i++) {
 			
-			ruleListText += (i + 1) + ". " + rulesKeys.get(i).toString() + "\n\n";
+			ruleListText += (i + 1) + ". " + ScriptReader.rulesKeys.get(i).toString() + "\n\n";
 		}
 		
 	}
 
-	public static String ruleAbout_placeholder = "Select a rule from the box above to\n" +
-			"view more information about that rule.\n\n" +
-			"This is really important so that you\n" +
-			"can actually know what each rule\n" +
-			"means.";
+	public static String ruleAbout_placeholder = "Select a rule from the box above to\nview more information.";
 	
 	
 }
