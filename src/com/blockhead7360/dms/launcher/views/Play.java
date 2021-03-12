@@ -256,7 +256,7 @@ public class Play extends Window{
 					playerCount.setText("No players online");
 					playerList.setText(" ");
 				} else {
-					playerCount.setText(playersOnline + " " + (playersOnline == 1 ? " player" : "players") + " online");
+					playerCount.setText(playersOnline + " " + (playersOnline == 1 ? "player" : "players") + " online");
 
 					JsonArray array = query.getJsonObject("players").getJsonArray("list");
 
