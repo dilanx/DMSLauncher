@@ -1,3 +1,6 @@
+**This is the legacy Java version of the DMSLauncher (up to version 1.11.0). All new version (2.0.0+) are available at https://github.com/dilanx/DMSLauncher.**
+
+
 Had a bunch of issues pushing to the old repository from my machine so I made a new one on Jan 31 2021. Much better.
 
 Website: https://blockhead7360.com/dmslauncher
