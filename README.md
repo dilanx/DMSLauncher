@@ -1,4 +1,4 @@
-**This is the legacy Java version of the DMSLauncher (up to version 1.11.0). All new version (2.0.0+) are available at https://github.com/dilanx/DMSLauncher.**
+**This is the legacy Java version of the DMSLauncher (up to version 1.11.0). All new versions (2.0.0+) are available at https://github.com/dilanx/DMSLauncher.**
 
 ---
 
